@@ -1,4 +1,5 @@
 import type { GameState, LevelDefinition } from "./types";
+import { cloneTiles } from "./grid";
 
 /** Minimal dev level for Phase 1 wiring. */
 export const DEV_LEVEL: LevelDefinition = {
@@ -27,9 +28,12 @@ export function createInitialState(level: LevelDefinition = DEV_LEVEL): GameStat
 
   return {
     level,
+    tiles: cloneTiles(level.tiles),
     playerPosition: { x: 2, y: 3 },
     entities,
     machines,
+    frozenPuddles: [],
+    nextEntityId: entities.length,
     moveCount: 0,
     status: "playing",
   };

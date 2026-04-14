@@ -39,13 +39,31 @@ export interface LevelDefinition {
 
 export type GameStatus = "playing" | "won";
 
+export interface FrozenPuddle {
+  position: Position;
+  machineId: string;
+  baseTile: Exclude<TileType, "ice">;
+}
+
 export interface GameState {
   level: LevelDefinition;
+  /** Runtime tile state (copied from level definition, then mutated by machines). */
+  tiles: TileType[][];
   playerPosition: Position;
   entities: Entity[];
   machines: Machine[];
+  frozenPuddles: FrozenPuddle[];
+  nextEntityId: number;
   moveCount: number;
   status: GameStatus;
 }
 
-export type MachineEffect = (state: GameState, machine: Machine) => GameState;
+export interface MachineStepContext {
+  refreshedPuddleKeys: Set<string>;
+}
+
+export type MachineEffect = (
+  state: GameState,
+  machine: Machine,
+  context: MachineStepContext,
+) => GameState;

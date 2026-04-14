@@ -1,4 +1,12 @@
-import type { Entity, GameState, LevelDefinition, Position, TileType } from "../logic/types";
+import type {
+  Entity,
+  FrozenPuddle,
+  GameState,
+  LevelDefinition,
+  Machine,
+  Position,
+  TileType,
+} from "../logic/types";
 
 const DEFAULT_TILES: TileType[][] = [
   ["wall", "wall", "wall", "wall", "wall"],
@@ -30,24 +38,42 @@ export function makeEntity(
   return { id, kind, position };
 }
 
+export function makeMachine(
+  id: string,
+  type: Machine["type"],
+  position: Position,
+  facing: Machine["facing"],
+): Machine {
+  return { id, type, position, facing };
+}
+
 export function makeState({
   tiles = DEFAULT_TILES,
   playerPosition = { x: 2, y: 2 },
   entities = [],
+  machines = [],
+  frozenPuddles = [],
+  nextEntityId,
   moveCount = 0,
   status = "playing",
 }: {
   tiles?: TileType[][];
   playerPosition?: Position;
   entities?: Entity[];
+  machines?: Machine[];
+  frozenPuddles?: FrozenPuddle[];
+  nextEntityId?: number;
   moveCount?: number;
   status?: GameState["status"];
 } = {}): GameState {
   return {
     level: makeLevel(tiles),
+    tiles: cloneTiles(tiles),
     playerPosition,
     entities,
-    machines: [],
+    machines,
+    frozenPuddles,
+    nextEntityId: nextEntityId ?? entities.length,
     moveCount,
     status,
   };

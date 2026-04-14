@@ -1,8 +1,7 @@
 import type { MachineEffect, MachineType } from "../types";
-
-const fanEffect: MachineEffect = (state, _machine) => state;
-const sprayerEffect: MachineEffect = (state, _machine) => state;
-const freezerEffect: MachineEffect = (state, _machine) => state;
+import { fanEffect } from "./fanEffect";
+import { freezerEffect } from "./freezerEffect";
+import { sprayerEffect } from "./sprayerEffect";
 
 export const machineRegistry: Record<MachineType, MachineEffect> = {
   fan: fanEffect,

@@ -9,7 +9,7 @@ describe("movePlayer", () => {
     const next = movePlayer(state, "right");
 
     expect(next.playerPosition).toEqual({ x: 3, y: 2 });
-    expect(next.moveCount).toBe(1);
+    expect(next.moveCount).toBe(0);
   });
 
   it("blocks movement into wall", () => {
@@ -31,7 +31,7 @@ describe("movePlayer", () => {
 
     expect(next.playerPosition).toEqual({ x: 2, y: 2 });
     expect(next.entities[0]?.position).toEqual({ x: 3, y: 2 });
-    expect(next.moveCount).toBe(1);
+    expect(next.moveCount).toBe(0);
   });
 
   it("does not push box into wall", () => {

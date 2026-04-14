@@ -20,6 +20,8 @@ function tileColor(tile: TileType): number {
       return 0xf59e0b;
     case "ice":
       return 0x93c5fd;
+    case "hole":
+      return 0x020617;
     case "floor":
     default:
       return 0x0f172a;

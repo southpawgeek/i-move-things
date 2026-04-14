@@ -1,4 +1,5 @@
 import { DELTA, addPosition, isWalkableTile, samePosition, tileAt } from "../grid";
+import { resolveHoleFill } from "../hole";
 import type { Entity, MachineEffect, Position } from "../types";
 
 const FAN_PUSHABLE_KINDS: ReadonlySet<Entity["kind"]> = new Set(["box", "debris"]);
@@ -26,14 +27,20 @@ export const fanEffect: MachineEffect = (state, machine, _context) => {
   }
 
   const destination = addPosition(target, step);
-  if (!isWalkableTile(tileAt(state, destination))) {
-    return state;
-  }
+  const destinationTile = tileAt(state, destination);
   if (samePosition(state.playerPosition, destination)) {
     return state;
   }
   if (findPushableAt(state.entities, destination)) {
     return state;
+  }
+
+  if (!isWalkableTile(destinationTile)) {
+    const holeResolved = resolveHoleFill(state, entity.id, destination);
+    if (!holeResolved) {
+      return state;
+    }
+    return holeResolved;
   }
 
   return {

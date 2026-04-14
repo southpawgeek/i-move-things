@@ -12,11 +12,15 @@ export const DEV_LEVEL: LevelDefinition = {
     ["wall", "floor", "floor", "floor", "wall"],
     ["wall", "wall", "wall", "wall", "wall"],
   ],
+  playerStart: { x: 2, y: 3 },
   entities: [],
   machines: [],
 };
 
-export function createInitialState(level: LevelDefinition = DEV_LEVEL): GameState {
+export function createInitialState(
+  level: LevelDefinition = DEV_LEVEL,
+  levelIndex = 0,
+): GameState {
   const entities = level.entities.map((entity, index) => ({
     ...entity,
     id: `entity-${index}`,
@@ -28,8 +32,9 @@ export function createInitialState(level: LevelDefinition = DEV_LEVEL): GameStat
 
   return {
     level,
+    levelIndex,
     tiles: cloneTiles(level.tiles),
-    playerPosition: { x: 2, y: 3 },
+    playerPosition: level.playerStart,
     entities,
     machines,
     frozenPuddles: [],

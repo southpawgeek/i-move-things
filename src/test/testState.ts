@@ -25,6 +25,7 @@ export function makeLevel(tiles: TileType[][] = DEFAULT_TILES): LevelDefinition 
     width: tiles[0].length,
     height: tiles.length,
     tiles: cloneTiles(tiles),
+    playerStart: { x: 2, y: 2 },
     entities: [],
     machines: [],
   };
@@ -56,6 +57,7 @@ export function makeState({
   nextEntityId,
   moveCount = 0,
   status = "playing",
+  levelIndex = 0,
 }: {
   tiles?: TileType[][];
   playerPosition?: Position;
@@ -65,9 +67,11 @@ export function makeState({
   nextEntityId?: number;
   moveCount?: number;
   status?: GameState["status"];
+  levelIndex?: number;
 } = {}): GameState {
   return {
     level: makeLevel(tiles),
+    levelIndex,
     tiles: cloneTiles(tiles),
     playerPosition,
     entities,

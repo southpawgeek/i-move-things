@@ -2,7 +2,7 @@
 export type Direction = "up" | "down" | "left" | "right";
 
 /** Static grid cell kinds. */
-export type TileType = "floor" | "wall" | "goal" | "ice";
+export type TileType = "floor" | "wall" | "goal" | "ice" | "hole";
 
 export interface Position {
   x: number;
@@ -33,6 +33,7 @@ export interface LevelDefinition {
   height: number;
   /** Row-major: tiles[y][x] */
   tiles: TileType[][];
+  playerStart: Position;
   entities: Omit<Entity, "id">[];
   machines: Omit<Machine, "id">[];
 }
@@ -47,6 +48,7 @@ export interface FrozenPuddle {
 
 export interface GameState {
   level: LevelDefinition;
+  levelIndex: number;
   /** Runtime tile state (copied from level definition, then mutated by machines). */
   tiles: TileType[][];
   playerPosition: Position;

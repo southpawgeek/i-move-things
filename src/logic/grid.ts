@@ -34,7 +34,7 @@ export function tileAt(state: GameState, pos: Position): TileType | undefined {
 }
 
 export function isWalkableTile(tile: TileType | undefined): boolean {
-  return tile !== undefined && tile !== "wall";
+  return tile !== undefined && tile !== "wall" && tile !== "hole";
 }
 
 export function cloneTiles(tiles: TileType[][]): TileType[][] {

@@ -53,6 +53,7 @@ describe("gameStep", () => {
     const state = makeState({
       machines: [fan],
       entities: [box],
+      playerPosition: { x: 3, y: 3 },
     });
 
     const next = gameStep(state, movePlayerAction("left"));
@@ -60,6 +61,60 @@ describe("gameStep", () => {
     expect(next.entities.find((entity) => entity.id === "box-1")?.position).toEqual({
       x: 3,
       y: 2,
+    });
+  });
+
+  it("fan fills hole when pushing debris into it", () => {
+    const tiles: TileType[][] = [
+      ["wall", "wall", "wall", "wall", "wall", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "wall"],
+      ["wall", "floor", "floor", "hole", "floor", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "wall"],
+      ["wall", "wall", "wall", "wall", "wall", "wall"],
+    ];
+    const fan = makeMachine("fan-1", "fan", { x: 1, y: 3 }, "right");
+    const debris = makeEntity("debris-1", "debris", { x: 2, y: 3 });
+    const state = makeState({
+      tiles,
+      machines: [fan],
+      entities: [debris],
+      playerPosition: { x: 1, y: 1 },
+    });
+
+    const next = gameStep(state, movePlayerAction("right"));
+
+    expect(next.tiles[3]?.[3]).toBe("floor");
+    expect(next.entities.some((entity) => entity.id === "debris-1")).toBe(false);
+  });
+
+  it("player can push fan and fan immediately moves debris", () => {
+    const tiles: TileType[][] = [
+      ["wall", "wall", "wall", "wall", "wall", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "wall"],
+      ["wall", "wall", "wall", "wall", "wall", "wall"],
+    ];
+    const fan = makeMachine("fan-1", "fan", { x: 2, y: 2 }, "down");
+    const debris = makeEntity("debris-1", "debris", { x: 3, y: 3 });
+    const state = makeState({
+      tiles,
+      playerPosition: { x: 1, y: 2 },
+      machines: [fan],
+      entities: [debris],
+    });
+
+    const next = gameStep(state, movePlayerAction("right"));
+
+    expect(next.machines.find((machine) => machine.id === "fan-1")?.position).toEqual({
+      x: 3,
+      y: 2,
+    });
+    expect(next.entities.find((entity) => entity.id === "debris-1")?.position).toEqual({
+      x: 3,
+      y: 4,
     });
   });
 

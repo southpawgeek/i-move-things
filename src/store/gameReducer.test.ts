@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { gameReducer } from "./gameReducer";
-import { movePlayer } from "./actions";
+import { loadLevel, movePlayer, restartLevel } from "./actions";
 import { makeState } from "../test/testState";
-import type { TileType } from "../logic/types";
+import type { LevelDefinition, TileType } from "../logic/types";
 
 describe("gameReducer", () => {
   it("sets status to won when move ends on goal", () => {
@@ -36,5 +36,45 @@ describe("gameReducer", () => {
     expect(next.moveCount).toBe(3);
     expect(next.status).toBe("playing");
     expect(next.playerPosition).toEqual({ x: 1, y: 1 });
+  });
+
+  it("restarts current level from initial state", () => {
+    const state = makeState({
+      moveCount: 9,
+      status: "won",
+      playerPosition: { x: 3, y: 3 },
+      levelIndex: 1,
+    });
+
+    const next = gameReducer(state, restartLevel());
+
+    expect(next.levelIndex).toBe(1);
+    expect(next.moveCount).toBe(0);
+    expect(next.status).toBe("playing");
+    expect(next.playerPosition).toEqual(state.level.playerStart);
+  });
+
+  it("loads selected level index and resets turn state", () => {
+    const level: LevelDefinition = {
+      width: 3,
+      height: 3,
+      tiles: [
+        ["wall", "wall", "wall"],
+        ["wall", "goal", "wall"],
+        ["wall", "wall", "wall"],
+      ],
+      playerStart: { x: 1, y: 1 },
+      entities: [],
+      machines: [],
+    };
+    const state = makeState({ moveCount: 4, status: "won" });
+
+    const next = gameReducer(state, loadLevel(3, level));
+
+    expect(next.levelIndex).toBe(3);
+    expect(next.level).toEqual(level);
+    expect(next.playerPosition).toEqual({ x: 1, y: 1 });
+    expect(next.moveCount).toBe(0);
+    expect(next.status).toBe("playing");
   });
 });

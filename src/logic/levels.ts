@@ -1,0 +1,27 @@
+import type { GameState, LevelDefinition } from "./types";
+
+/** Minimal dev level for Phase 1 wiring. */
+export const DEV_LEVEL: LevelDefinition = {
+  width: 5,
+  height: 5,
+  tiles: [
+    ["wall", "wall", "wall", "wall", "wall"],
+    ["wall", "floor", "floor", "floor", "wall"],
+    ["wall", "floor", "goal", "floor", "wall"],
+    ["wall", "floor", "floor", "floor", "wall"],
+    ["wall", "wall", "wall", "wall", "wall"],
+  ],
+  entities: [],
+  machines: [],
+};
+
+export function createInitialState(level: LevelDefinition = DEV_LEVEL): GameState {
+  return {
+    level,
+    playerPosition: { x: 2, y: 3 },
+    entities: [],
+    machines: [],
+    moveCount: 0,
+    status: "playing",
+  };
+}

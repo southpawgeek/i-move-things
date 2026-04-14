@@ -47,3 +47,5 @@ export interface GameState {
   moveCount: number;
   status: GameStatus;
 }
+
+export type MachineEffect = (state: GameState, machine: Machine) => GameState;

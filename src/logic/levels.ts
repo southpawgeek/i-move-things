@@ -16,11 +16,20 @@ export const DEV_LEVEL: LevelDefinition = {
 };
 
 export function createInitialState(level: LevelDefinition = DEV_LEVEL): GameState {
+  const entities = level.entities.map((entity, index) => ({
+    ...entity,
+    id: `entity-${index}`,
+  }));
+  const machines = level.machines.map((machine, index) => ({
+    ...machine,
+    id: `machine-${index}`,
+  }));
+
   return {
     level,
     playerPosition: { x: 2, y: 3 },
-    entities: [],
-    machines: [],
+    entities,
+    machines,
     moveCount: 0,
     status: "playing",
   };

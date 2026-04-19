@@ -55,8 +55,12 @@ interface EditorLevel {
 }
 
 function createEmptyTiles(width: number, height: number): TileType[][] {
-  return Array.from({ length: height }, () =>
-    Array.from({ length: width }, () => "floor" as TileType),
+  return Array.from({ length: height }, (_, y) =>
+    Array.from({ length: width }, (_, x) =>
+      x === 0 || x === width - 1 || y === 0 || y === height - 1
+        ? ("wall" as TileType)
+        : ("floor" as TileType),
+    ),
   );
 }
 

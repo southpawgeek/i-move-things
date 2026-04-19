@@ -118,7 +118,8 @@ export function GameCanvas(): ReactElement {
   }, [dispatch, state.status]);
 
   // Grid dimensions and tile data
-  const { width, height, tiles } = state.level;
+  const { width, height } = state.level;
+  const tiles = state.tiles;
 
   // Memoized tile grid
   const tileGrid = useMemo(() => {

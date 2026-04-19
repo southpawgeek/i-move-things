@@ -2,7 +2,8 @@ import { useReducer, useRef, useState, useEffect, type ReactElement } from "reac
 import { GameCanvas } from "./GameCanvas";
 import { GameProvider } from "../store/GameContext";
 import { gameReducer } from "../store/gameReducer";
-import { loadLevel, restartLevel } from "../store/actions";
+import { restartLevel } from "../store/actions";
+import { createInitialState } from "../logic/levels";
 import type { LevelDefinition } from "../logic/types";
 
 interface PlayLevelModalProps {
@@ -75,13 +76,7 @@ function PlayLevelScreen({
         </button>
       </div>
       <GameProvider
-        initialState={{
-          ...loadLevel(levelIndex, level),
-          status: "playing",
-          moveCount: 0,
-          frozenPuddles: [],
-          nextEntityId: 0,
-        } as any}
+        initialState={createInitialState(level, levelIndex)}
       >
         <GameCanvas />
       </GameProvider>

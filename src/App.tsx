@@ -172,73 +172,8 @@ function GameScreen() {
         >
           {hasNextLevel ? "NEXT LEVEL" : "NO MORE LEVELS"}
         </button>
-        <button
-          type="button"
-          onClick={() => setShowEditor(true)}
-          style={{
-            background:
-              "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
-            color: "#c084fc",
-            border: "1px solid #7c3aed",
-            borderRadius: "4px",
-            padding: "0.4rem 0.8rem",
-            fontFamily: "'Press Start 2P', 'Courier New', monospace",
-            fontSize: "0.65rem",
-            cursor: "pointer",
-            transition: "all 0.15s ease",
-            boxShadow: "0 0 8px rgba(124, 58, 237, 0.3)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "linear-gradient(180deg, #374151 0%, #1f2937 100%)";
-            e.currentTarget.style.borderColor = "#a78bfa";
-            e.currentTarget.style.boxShadow = "0 0 12px rgba(167, 139, 250, 0.5)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "linear-gradient(180deg, #1f2937 0%, #111827 100%)";
-            e.currentTarget.style.borderColor = "#7c3aed";
-            e.currentTarget.style.boxShadow = "0 0 8px rgba(124, 58, 237, 0.3)";
-          }}
-        >
-          EDITOR
-        </button>
       </div>
       <GameCanvas />
-      {exportText && (
-        <div
-          style={{
-            marginTop: "1rem",
-            padding: "0.75rem",
-            background: "rgba(168, 85, 240, 0.08)",
-            border: "1px solid rgba(168, 85, 240, 0.3)",
-            borderRadius: "8px",
-            position: "relative",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "0.65rem",
-              marginBottom: "0.5rem",
-              color: "#a78bfa",
-            }}
-          >
-            EXPORT JSON (copied to clipboard)
-          </div>
-          <pre
-            style={{
-              margin: 0,
-              fontSize: "0.6rem",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-all",
-              fontFamily: "'Courier New', monospace",
-              color: "#e2e8f0",
-              maxHeight: "200px",
-              overflow: "auto",
-            }}
-          >
-            {exportText}
-          </pre>
-        </div>
-      )}
     </div>
   );
 }
@@ -263,27 +198,7 @@ export default function App() {
 
   return (
     <GameProvider initialState={createInitialState(LEVELS[0], 0)}>
-      <GameScreenWithEditor setShowEditor={setShowEditor} exportText={exportText} />
+      <GameScreen />
     </GameProvider>
   );
 }
-
-function GameScreenWithEditor({
-  setShowEditor,
-  exportText,
-}: {
-  setShowEditor: (v: boolean) => void;
-  exportText: string;
-}): ReactElement {
-  const { state, dispatch } = useGame();
-  const hasNextLevel = state.levelIndex < LEVELS.length - 1;
-
-  const onRestart = () => {
-    dispatch(restartLevel());
-  };
-
-  const onNextLevel = () => {
-    if (!hasNextLevel) return;
-    const nextIndex = state.levelIndex + 1;
-    dispatch(loadLevel(nextIndex, LEVELS[nextIndex]));
-  };

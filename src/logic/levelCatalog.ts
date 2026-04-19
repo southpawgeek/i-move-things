@@ -82,4 +82,17 @@ function parseLevel(level: unknown): LevelDefinition {
   };
 }
 
-export const LEVELS: LevelDefinition[] = [parseLevel(level01), parseLevel(level02)];
+export { parseLevel };
+
+/**
+ * Define which levels to play and in what order.
+ * Add/remove entries to control the level sequence.
+ */
+export const LEVEL_CONFIG: { name: string; level: LevelDefinition }[] = [
+  { name: "Tutorial", level: parseLevel(level01) },
+  { name: "Machines", level: parseLevel(level02) },
+];
+
+export const LEVELS: LevelDefinition[] = LEVEL_CONFIG.map((c) => c.level);
+
+

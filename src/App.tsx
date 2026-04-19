@@ -3,8 +3,8 @@ import { createInitialState } from "./logic/levels";
 import { useGame } from "./store/GameContext";
 import { GameCanvas } from "./components/GameCanvas";
 import { LevelEditor } from "./components/LevelEditor";
-import { LEVELS } from "./logic/levelCatalog";
-import { loadLevel, restartLevel } from "./store/actions";
+import { LEVEL_CONFIG } from "./logic/levelCatalog";
+import { restartLevel } from "./store/actions";
 import { useState, type ReactElement } from "react";
 
 function GameScreen({
@@ -13,7 +13,7 @@ function GameScreen({
   setShowEditor: (v: boolean) => void;
 }) {
   const { state, dispatch } = useGame();
-  const hasNextLevel = state.levelIndex < LEVELS.length - 1;
+  const hasNextLevel = state.levelIndex < LEVEL_CONFIG.length - 1;
 
   const onRestart = () => {
     dispatch(restartLevel());
@@ -22,7 +22,7 @@ function GameScreen({
   const onNextLevel = () => {
     if (!hasNextLevel) return;
     const nextIndex = state.levelIndex + 1;
-    dispatch(loadLevel(nextIndex, LEVELS[nextIndex]));
+    dispatch(loadLevel(nextIndex, LEVEL_CONFIG[nextIndex].level));
   };
 
   return (
@@ -83,7 +83,7 @@ function GameScreen({
         <span>
           Level:{" "}
           <span style={{ color: "#06b6d4", textShadow: "0 0 6px rgba(6, 182, 212, 0.5)" }}>
-            {state.levelIndex + 1}/{LEVELS.length}
+            {state.levelIndex + 1}/{LEVEL_CONFIG.length}
           </span>
         </span>
         <span>
@@ -229,7 +229,7 @@ export default function App() {
   }
 
   return (
-    <GameProvider initialState={createInitialState(LEVELS[0], 0)}>
+    <GameProvider initialState={createInitialState(LEVEL_CONFIG[0].level, 0)}>
       <GameScreen setShowEditor={setShowEditor} />
     </GameProvider>
   );

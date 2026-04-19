@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, type ReactElement } from "react";
+import { useState, useCallback, useRef, useEffect, type ReactElement } from "react";
 import type { TileType } from "../logic/types";
 
 const TILE_SIZE = 32;

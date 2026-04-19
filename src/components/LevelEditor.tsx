@@ -194,8 +194,20 @@ export function LevelEditor({
   }, [width, height]);
 
   const handleExport = useCallback(() => {
+    const emojiTiles = tiles.map((row) => row.map((t) => TILE_SYMBOLS[t]));
     const json = JSON.stringify(
-      { width, height, tiles, playerStart, entities, machines },
+      {
+        width,
+        height,
+        tiles: emojiTiles,
+        playerStart,
+        entities: entities.map((e) => ({ kind: e.kind, position: e.position })),
+        machines: machines.map((m) => ({
+          type: m.type,
+          position: m.position,
+          facing: m.facing,
+        })),
+      },
       null,
       2,
     );

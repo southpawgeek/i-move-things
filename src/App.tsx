@@ -172,6 +172,34 @@ function GameScreen() {
         >
           {hasNextLevel ? "NEXT LEVEL" : "NO MORE LEVELS"}
         </button>
+        <button
+          type="button"
+          onClick={() => setShowEditor(true)}
+          style={{
+            background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
+            color: "#c084fc",
+            border: "1px solid #7c3aed",
+            borderRadius: "4px",
+            padding: "0.4rem 0.8rem",
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
+            fontSize: "0.65rem",
+            cursor: "pointer",
+            transition: "all 0.15s ease",
+            boxShadow: "0 0 8px rgba(124, 58, 237, 0.3)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "linear-gradient(180deg, #374151 0%, #1f2937 100%)";
+            e.currentTarget.style.borderColor = "#a78bfa";
+            e.currentTarget.style.boxShadow = "0 0 12px rgba(167, 139, 250, 0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "linear-gradient(180deg, #1f2937 0%, #111827 100%)";
+            e.currentTarget.style.borderColor = "#7c3aed";
+            e.currentTarget.style.boxShadow = "0 0 8px rgba(124, 58, 237, 0.3)";
+          }}
+        >
+          EDITOR
+        </button>
       </div>
       <GameCanvas />
     </div>

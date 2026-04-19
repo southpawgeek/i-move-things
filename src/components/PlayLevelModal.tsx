@@ -1,8 +1,7 @@
-import { useReducer, useRef, useState, useEffect, type ReactElement } from "react";
+import { useReducer, useState, type ReactElement } from "react";
 import { GameCanvas } from "./GameCanvas";
 import { GameProvider } from "../store/GameContext";
 import { gameReducer } from "../store/gameReducer";
-import { restartLevel } from "../store/actions";
 import { createInitialState } from "../logic/levels";
 import type { LevelDefinition } from "../logic/types";
 
@@ -17,7 +16,7 @@ function PlayLevelScreen({
   levelIndex,
   onClose,
 }: PlayLevelModalProps): ReactElement {
-  const [state, dispatch] = useReducer(gameReducer, createInitialState(level, levelIndex));
+  const [, dispatch] = useReducer(gameReducer, createInitialState(level, levelIndex));
 
   return (
     <div
@@ -42,22 +41,6 @@ function PlayLevelScreen({
         </span>
         <button
           type="button"
-          onClick={() => dispatch(restartLevel())}
-          style={{
-            background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
-            color: "#c084fc",
-            border: "1px solid #7c3aed",
-            borderRadius: "4px",
-            padding: "0.3rem 0.6rem",
-            fontFamily: "'Press Start 2P', 'Courier New', monospace",
-            fontSize: "0.6rem",
-            cursor: "pointer",
-          }}
-        >
-          RESTART
-        </button>
-        <button
-          type="button"
           onClick={onClose}
           style={{
             background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
@@ -76,7 +59,7 @@ function PlayLevelScreen({
       <GameProvider
         initialState={createInitialState(level, levelIndex)}
       >
-        <GameCanvas />
+        <GameCanvas hasNextLevel={false} />
       </GameProvider>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { restartLevel } from "../store/actions";
 import { movePlayer } from "../store/actions";
 import { useGame } from "../store/GameContext";
 import type { Direction, Entity, Machine, TileType } from "../logic/types";
@@ -101,7 +102,13 @@ type ActiveHoleFill = {
   hole: { x: number; y: number };
 };
 
-export function GameCanvas(): ReactElement {
+export function GameCanvas({
+  onWin,
+  hasNextLevel,
+}: {
+  onWin?: () => void;
+  hasNextLevel: boolean;
+}): ReactElement {
   const { state, dispatch } = useGame();
   const hostRef = useRef<HTMLDivElement | null>(null);
   const prevSnapshot = useRef<typeof state | null>(null);
@@ -152,7 +159,13 @@ export function GameCanvas(): ReactElement {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
       const direction = keyToDirection(event.key);
-      if (!direction) return;
+      if (!direction) {
+        if (event.key === "Enter" && state.status === "won" && hasNextLevel) {
+          event.preventDefault();
+          onWin?.();
+        }
+        return;
+      }
 
       if (event.key.startsWith("Arrow")) {
         event.preventDefault();
@@ -366,6 +379,44 @@ export function GameCanvas(): ReactElement {
         );
       })}
       {playerElement}
+      {state.status === "won" && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0, 0, 0, 0.6)",
+            gap: "0.5rem",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+              color: "#4ade80",
+              textShadow: "0 0 12px rgba(74, 222, 128, 0.6)",
+              letterSpacing: "2px",
+            }}
+          >
+            {hasNextLevel ? "You Win!" : "Thanks For Playing!"}
+          </div>
+          <div
+            style={{
+              fontSize: "0.55rem",
+              color: "#e2e8f0",
+              opacity: 0.8,
+            }}
+          >
+            {hasNextLevel ? "Press Enter" : "No More Levels"}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,7 +25,7 @@ describe("GameCanvas", () => {
   });
 
   it("mounts and renders the game grid", async () => {
-    const { container } = render(<GameCanvas />);
+    const { container } = render(<GameCanvas hasNextLevel={true} />);
 
     await waitFor(() => {
       expect(container.querySelector("[style*='position: absolute']")).not.toBeNull();

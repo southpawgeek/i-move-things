@@ -205,7 +205,7 @@ function GameScreen({
           EDITOR
         </button>
       </div>
-      <GameCanvas />
+      <GameCanvas onWin={onNextLevel} hasNextLevel={hasNextLevel} />
     </div>
   );
 }

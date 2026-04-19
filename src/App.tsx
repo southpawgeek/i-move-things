@@ -4,7 +4,7 @@ import { useGame } from "./store/GameContext";
 import { GameCanvas } from "./components/GameCanvas";
 import { LevelEditor } from "./components/LevelEditor";
 import { LEVEL_CONFIG } from "./logic/levelCatalog";
-import { restartLevel } from "./store/actions";
+import { loadLevel, restartLevel } from "./store/actions";
 import { useState, type ReactElement } from "react";
 
 function GameScreen({

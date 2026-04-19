@@ -14,68 +14,6 @@ vi.mock("../store/GameContext", () => ({
   }),
 }));
 
-vi.mock("pixi.js", () => {
-  class Graphics {
-    public x = 0;
-    public y = 0;
-
-    clear() {
-      return this;
-    }
-    rect() {
-      return this;
-    }
-    fill() {
-      return this;
-    }
-    stroke() {
-      return this;
-    }
-    poly() {
-      return this;
-    }
-    destroy() {
-      // no-op for tests
-    }
-  }
-
-  class Container {
-    public x = 0;
-    public y = 0;
-    private children: unknown[] = [];
-
-    addChild(...children: unknown[]) {
-      this.children.push(...children);
-      return children[0];
-    }
-    removeChild(child: unknown) {
-      this.children = this.children.filter((current) => current !== child);
-      return child;
-    }
-    destroy() {
-      this.children = [];
-    }
-  }
-
-  class Application {
-    public stage = new Container();
-    public canvas = document.createElement("canvas");
-    public ticker = {
-      add: vi.fn(),
-    };
-
-    async init() {
-      return;
-    }
-
-    destroy() {
-      return;
-    }
-  }
-
-  return { Application, Container, Graphics };
-});
-
 describe("GameCanvas", () => {
   beforeEach(() => {
     mockDispatch.mockReset();
@@ -86,11 +24,11 @@ describe("GameCanvas", () => {
     cleanup();
   });
 
-  it("mounts and appends a canvas", async () => {
+  it("mounts and renders the game grid", async () => {
     const { container } = render(<GameCanvas />);
 
     await waitFor(() => {
-      expect(container.querySelector("canvas")).not.toBeNull();
+      expect(container.querySelector("[style*='position: absolute']")).not.toBeNull();
     });
   });
 

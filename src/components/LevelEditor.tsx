@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, type ReactElement } from "react";
 import type { TileType } from "../logic/types";
+import { PlayLevelModal } from "./PlayLevelModal";
 
 const TILE_SIZE = 32;
 
@@ -755,6 +756,22 @@ export function LevelEditor({
         >
           Import JSON
         </button>
+        <PlayLevelModal
+          level={{
+            width,
+            height,
+            tiles,
+            playerStart,
+            entities: entities.map((e) => ({ kind: e.kind, position: e.position })),
+            machines: machines.map((m) => ({
+              type: m.type,
+              position: m.position,
+              facing: m.facing,
+            })),
+          }}
+          levelIndex={0}
+          onCancel={() => {}}
+        />
         <button
           type="button"
           onClick={onCancel}

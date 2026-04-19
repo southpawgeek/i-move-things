@@ -10,42 +10,42 @@ const TILE_SIZE = 48;
 function tileColor(tile: TileType): string {
   switch (tile) {
     case "wall":
-      return "#334155";
+      return "#4c1d95";
     case "goal":
-      return "#f59e0b";
+      return "#fbbf24";
     case "ice":
-      return "#93c5fd";
+      return "#22d3ee";
     case "hole":
       return "#000000";
     case "floor":
     default:
-      return "#0f172a";
+      return "#1e1b4b";
   }
 }
 
 function entityColor(entity: Entity): string {
   switch (entity.kind) {
     case "box":
-      return "#92400e";
+      return "#f97316";
     case "debris":
-      return "#6b7280";
+      return "#a78bfa";
     case "puddle":
-      return "#38bdf8";
+      return "#22d3ee";
     default:
-      return "#ffffff";
+      return "#e879f9";
   }
 }
 
 function entityBorderColor(kind: Entity["kind"]): string {
-  return kind === "puddle" ? "#0c4a6e" : "#111827";
+  return kind === "puddle" ? "#0891b2" : "#7c3aed";
 }
 
 function machineColor(type: Machine["type"]): string {
   switch (type) {
     case "sprayer":
-      return "#14b8a6";
+      return "#22d3ee";
     case "freezer":
-      return "#3b82f6";
+      return "#818cf8";
     case "fan":
     default:
       return "#fb923c";
@@ -314,8 +314,8 @@ export function GameCanvas(): ReactElement {
             left: 6,
             width: TILE_SIZE - 12,
             height: TILE_SIZE - 12,
-            backgroundColor: "#22c55e",
-            border: "1px solid #052e16",
+            backgroundColor: "#4ade80",
+            border: "1px solid #16a34a",
             boxSizing: "border-box",
           }}
         />
@@ -332,10 +332,11 @@ export function GameCanvas(): ReactElement {
         width: width * TILE_SIZE,
         height: height * TILE_SIZE,
         margin: "0 auto",
-        border: "1px solid #1f2937",
+        border: "1px solid #7c3aed",
         borderRadius: "8px",
         overflow: "hidden",
-        background: "#020617",
+        background: "#1e1b4b",
+        boxShadow: "0 0 20px rgba(124, 58, 237, 0.3), inset 0 0 20px rgba(124, 58, 237, 0.1)",
       }}
     >
       {tileElements}

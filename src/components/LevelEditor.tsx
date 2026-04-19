@@ -93,7 +93,78 @@ export function LevelEditor({
 
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const handleGridClick = useCallback(
+  const onDragMove = useCallback(
+    (e: MouseEvent) => {
+      const rect = gridRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+      const y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+      if (x < 0 || x >= width || y < 0 || y >= height) return;
+
+      if (selectedMode === "tile") {
+        setTiles((prev) => {
+          const next = prev.map((row) => [...row]);
+          next[y][x] = selectedTile;
+          return next;
+        });
+      } else if (selectedMode === "player") {
+        setPlayerStart({ x, y });
+      } else if (selectedMode === "entity") {
+        setEntities((prev) => {
+          const existing = prev.findIndex(
+            (en) => en.position.x === x && en.position.y === y,
+          );
+          const next = [...prev];
+          if (existing >= 0) {
+            next[existing] = { kind: selectedEntity, position: { x, y } };
+          } else {
+            next.push({ kind: selectedEntity, position: { x, y } });
+          }
+          return next;
+        });
+      } else if (selectedMode === "machine") {
+        setMachines((prev) => {
+          const existing = prev.findIndex(
+            (m) => m.position.x === x && m.position.y === y,
+          );
+          const next = [...prev];
+          if (existing >= 0) {
+            next[existing] = {
+              type: selectedMachine,
+              position: { x, y },
+              facing: machineFacing,
+            };
+          } else {
+            next.push({
+              type: selectedMachine,
+              position: { x, y },
+              facing: machineFacing,
+            });
+          }
+          return next;
+        });
+      }
+    },
+    [selectedMode, selectedTile, selectedEntity, selectedMachine, machineFacing, width, height],
+  );
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const onDocMove = (e: MouseEvent) => {
+      if (e.buttons !== 1) {
+        setIsDragging(false);
+        return;
+      }
+      onDragMove(e);
+    };
+    const onDocUp = () => setIsDragging(false);
+    document.addEventListener("mousemove", onDocMove);
+    document.addEventListener("mouseup", onDocUp);
+    return () => {
+      document.removeEventListener("mousemove", onDocMove);
+      document.removeEventListener("mouseup", onDocUp);
+    };
+  }, [isDragging, onDragMove]);
     (e: React.MouseEvent<HTMLDivElement>) => {
       const rect = gridRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -181,62 +252,6 @@ export function LevelEditor({
       }
     },
     [width, height],
-  );
-
-  const handleGridDrag = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!isDragging) return;
-      const rect = gridRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
-      const y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
-      if (x < 0 || x >= width || y < 0 || y >= height) return;
-
-      if (selectedMode === "tile") {
-        setTiles((prev) => {
-          const next = prev.map((row) => [...row]);
-          next[y][x] = selectedTile;
-          return next;
-        });
-      } else if (selectedMode === "player") {
-        setPlayerStart({ x, y });
-      } else if (selectedMode === "entity") {
-        setEntities((prev) => {
-          const existing = prev.findIndex(
-            (en) => en.position.x === x && en.position.y === y,
-          );
-          const next = [...prev];
-          if (existing >= 0) {
-            next[existing] = { kind: selectedEntity, position: { x, y } };
-          } else {
-            next.push({ kind: selectedEntity, position: { x, y } });
-          }
-          return next;
-        });
-      } else if (selectedMode === "machine") {
-        setMachines((prev) => {
-          const existing = prev.findIndex(
-            (m) => m.position.x === x && m.position.y === y,
-          );
-          const next = [...prev];
-          if (existing >= 0) {
-            next[existing] = {
-              type: selectedMachine,
-              position: { x, y },
-              facing: machineFacing,
-            };
-          } else {
-            next.push({
-              type: selectedMachine,
-              position: { x, y },
-              facing: machineFacing,
-            });
-          }
-          return next;
-        });
-      }
-    },
-    [isDragging, selectedMode, selectedTile, selectedEntity, selectedMachine, machineFacing, width, height],
   );
 
   const handleClear = useCallback(() => {
@@ -595,15 +610,8 @@ export function LevelEditor({
           if (e.button === 0) setIsDragging(true);
           handleGridClick(e);
         }}
-        onMouseOut={() => {
-          setIsDragging(false);
-          setHoverCell(null);
-        }}
-        onMouseMove={(e) => {
-          handleGridMouseMove(e);
-          if (isDragging && e.buttons === 1) handleGridDrag(e);
-        }}
-        onMouseUp={() => setIsDragging(false)}
+        onMouseOut={() => setHoverCell(null)}
+        onMouseMove={handleGridMouseMove}
         style={{
           display: "inline-grid",
           gridTemplateColumns: `repeat(${width}, ${TILE_SIZE}px)`,

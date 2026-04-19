@@ -174,6 +174,7 @@ export function GameCanvas(): ReactElement {
             top: machine.position.y * TILE_SIZE,
             width: TILE_SIZE,
             height: TILE_SIZE,
+            transition: "left 0.1s ease, top 0.1s ease",
           }}
         >
           <div
@@ -219,6 +220,7 @@ export function GameCanvas(): ReactElement {
             top: entity.position.y * TILE_SIZE,
             width: TILE_SIZE,
             height: TILE_SIZE,
+            transition: "left 0.1s ease, top 0.1s ease",
           }}
         >
           <div
@@ -249,6 +251,7 @@ export function GameCanvas(): ReactElement {
           top: state.playerPosition.y * TILE_SIZE,
           width: TILE_SIZE,
           height: TILE_SIZE,
+          transition: "left 0.1s ease, top 0.1s ease",
         }}
       >
         <div

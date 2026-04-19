@@ -535,7 +535,55 @@ export function LevelEditor({
         ref={gridRef}
         onMouseDown={(e) => {
           if (e.button === 0) setIsDragging(true);
-          handleGridClick(e);
+          const rect = gridRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          const x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+          const y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+          if (x < 0 || x >= width || y < 0 || y >= height) return;
+
+          if (selectedMode === "tile") {
+            setTiles((prev) => {
+              const next = prev.map((row) => [...row]);
+              next[y][x] = selectedTile;
+              return next;
+            });
+          } else if (selectedMode === "player") {
+            setPlayerStart({ x, y });
+          } else if (selectedMode === "entity") {
+            setEntities((prev) => {
+              const existing = prev.findIndex(
+                (en) => en.position.x === x && en.position.y === y,
+              );
+              const next = [...prev];
+              if (existing >= 0) {
+                next[existing] = { kind: selectedEntity, position: { x, y } };
+              } else {
+                next.push({ kind: selectedEntity, position: { x, y } });
+              }
+              return next;
+            });
+          } else if (selectedMode === "machine") {
+            setMachines((prev) => {
+              const existing = prev.findIndex(
+                (m) => m.position.x === x && m.position.y === y,
+              );
+              const next = [...prev];
+              if (existing >= 0) {
+                next[existing] = {
+                  type: selectedMachine,
+                  position: { x, y },
+                  facing: machineFacing,
+                };
+              } else {
+                next.push({
+                  type: selectedMachine,
+                  position: { x, y },
+                  facing: machineFacing,
+                });
+              }
+              return next;
+            });
+          }
         }}
         onMouseOut={() => setHoverCell(null)}
         onMouseMove={handleGridMouseMove}

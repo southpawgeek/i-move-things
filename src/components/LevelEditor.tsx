@@ -331,7 +331,7 @@ export function LevelEditor({
         <div style={{ width: "1px", height: "20px", background: "#7c3aed", margin: "0 0.5rem" }} />
 
         {/* Mode buttons */}
-        {(["" as const, ...("tile" | "player" | "entity" | "machine")] as const).map(
+        {(["", "tile", "player", "entity", "machine"] as const).map(
           (mode) => {
             const labels: Record<string, string> = {
               "": "Select",

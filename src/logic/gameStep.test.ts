@@ -147,4 +147,27 @@ describe("gameStep", () => {
       ),
     ).toBe(true);
   });
+
+  it("blocks player movement into hole tiles from level-02 layout", () => {
+    // Level-02 row 3: floor floor hole hole floor
+    // Player at (2,3) trying to move right into hole at (3,3)
+    const tiles: TileType[][] = [
+      ["wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall"],
+      ["wall", "floor", "floor", "floor", "wall", "goal", "floor", "floor", "wall"],
+      ["wall", "floor", "wall", "wall", "wall", "wall", "wall", "floor", "wall"],
+      ["wall", "floor", "floor", "hole", "hole", "floor", "floor", "floor", "wall"],
+      ["wall", "floor", "wall", "wall", "floor", "wall", "wall", "floor", "wall"],
+      ["wall", "floor", "floor", "floor", "floor", "floor", "wall", "floor", "wall"],
+      ["wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall"],
+    ];
+    const state = makeState({
+      tiles,
+      playerPosition: { x: 2, y: 3 },
+    });
+
+    const next = gameStep(state, movePlayerAction("right"));
+
+    expect(next.playerPosition).toEqual({ x: 2, y: 3 });
+    expect(next.status).toBe("playing");
+  });
 });

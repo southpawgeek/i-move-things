@@ -89,6 +89,7 @@ export function LevelEditor({
   const [selectedMachine, setSelectedMachine] = useState<MachineType>("fan");
   const [machineFacing, setMachineFacing] = useState<MachineFacing>("right");
   const [hoverCell, setHoverCell] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -180,6 +181,62 @@ export function LevelEditor({
       }
     },
     [width, height],
+  );
+
+  const handleGridDrag = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isDragging) return;
+      const rect = gridRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+      const y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+      if (x < 0 || x >= width || y < 0 || y >= height) return;
+
+      if (selectedMode === "tile") {
+        setTiles((prev) => {
+          const next = prev.map((row) => [...row]);
+          next[y][x] = selectedTile;
+          return next;
+        });
+      } else if (selectedMode === "player") {
+        setPlayerStart({ x, y });
+      } else if (selectedMode === "entity") {
+        setEntities((prev) => {
+          const existing = prev.findIndex(
+            (en) => en.position.x === x && en.position.y === y,
+          );
+          const next = [...prev];
+          if (existing >= 0) {
+            next[existing] = { kind: selectedEntity, position: { x, y } };
+          } else {
+            next.push({ kind: selectedEntity, position: { x, y } });
+          }
+          return next;
+        });
+      } else if (selectedMode === "machine") {
+        setMachines((prev) => {
+          const existing = prev.findIndex(
+            (m) => m.position.x === x && m.position.y === y,
+          );
+          const next = [...prev];
+          if (existing >= 0) {
+            next[existing] = {
+              type: selectedMachine,
+              position: { x, y },
+              facing: machineFacing,
+            };
+          } else {
+            next.push({
+              type: selectedMachine,
+              position: { x, y },
+              facing: machineFacing,
+            });
+          }
+          return next;
+        });
+      }
+    },
+    [isDragging, selectedMode, selectedTile, selectedEntity, selectedMachine, machineFacing, width, height],
   );
 
   const handleClear = useCallback(() => {
@@ -534,10 +591,19 @@ export function LevelEditor({
       {/* Grid */}
       <div
         ref={gridRef}
-        onMouseDown={handleGridClick}
-        onMouseOut={() => setHoverCell(null)}
+        onMouseDown={(e) => {
+          if (e.button === 0) setIsDragging(true);
+          handleGridClick(e);
+        }}
+        onMouseOut={() => {
+          setIsDragging(false);
+          setHoverCell(null);
+        }}
         onMouseMove={handleGridMouseMove}
-        onMouseUp={handleGridMouseDown}
+        onMouseUp={() => setIsDragging(false)}
+        onMouseEnter={(e) => {
+          if (isDragging) handleGridDrag(e);
+        }}
         style={{
           display: "inline-grid",
           gridTemplateColumns: `repeat(${width}, ${TILE_SIZE}px)`,

@@ -1,14 +1,11 @@
-import { useEffect, useRef, useCallback, useMemo, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { movePlayer } from "../store/actions";
 import { useGame } from "../store/GameContext";
-import type { Direction, Entity, GameState, Machine, TileType } from "../logic/types";
+import type { Direction, Entity, Machine, TileType } from "../logic/types";
+import { HoleFillOverlay } from "./HoleFillOverlay";
+import { detectHoleFills } from "./holeFillDiff";
 
 const TILE_SIZE = 48;
-
-type MachineGraphics = {
-  base: string;
-  arrow: string;
-};
 
 function tileColor(tile: TileType): string {
   switch (tile) {
@@ -37,6 +34,10 @@ function entityColor(entity: Entity): string {
     default:
       return "#ffffff";
   }
+}
+
+function entityBorderColor(kind: Entity["kind"]): string {
+  return kind === "puddle" ? "#0c4a6e" : "#111827";
 }
 
 function machineColor(type: Machine["type"]): string {
@@ -92,9 +93,60 @@ function keyToDirection(key: string): Direction | null {
   }
 }
 
+type ActiveHoleFill = {
+  key: string;
+  entityId: string;
+  entityKind: Entity["kind"];
+  from: { x: number; y: number };
+  hole: { x: number; y: number };
+};
+
 export function GameCanvas(): ReactElement {
   const { state, dispatch } = useGame();
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const prevSnapshot = useRef<typeof state | null>(null);
+  const prevMoveCountRef = useRef<number | null>(null);
+  const blockHoleFillInputRef = useRef(false);
+  const [activeHoleFills, setActiveHoleFills] = useState<ActiveHoleFill[]>([]);
+
+  blockHoleFillInputRef.current = activeHoleFills.length > 0;
+
+  const removeHoleFill = useCallback((key: string) => {
+    setActiveHoleFills((items) => items.filter((item) => item.key !== key));
+  }, []);
+
+  useEffect(() => {
+    if (prevMoveCountRef.current !== null && state.moveCount === 0 && prevMoveCountRef.current > 0) {
+      setActiveHoleFills([]);
+    }
+    prevMoveCountRef.current = state.moveCount;
+  }, [state.moveCount]);
+
+  useEffect(() => {
+    setActiveHoleFills([]);
+  }, [state.levelIndex]);
+
+  useEffect(() => {
+    const prev = prevSnapshot.current;
+    const sameLevel =
+      prev !== null && prev.levelIndex === state.levelIndex && prev.level === state.level;
+    if (sameLevel) {
+      const fills = detectHoleFills(prev, state);
+      if (fills.length > 0) {
+        setActiveHoleFills((active) => [
+          ...active,
+          ...fills.map((f) => ({
+            key: `hole-fill-${f.entityId}-${state.moveCount}`,
+            entityId: f.entityId,
+            entityKind: f.entityKind,
+            from: f.from,
+            hole: f.hole,
+          })),
+        ]);
+      }
+    }
+    prevSnapshot.current = state;
+  }, [state]);
 
   // Keyboard input
   useEffect(() => {
@@ -107,6 +159,7 @@ export function GameCanvas(): ReactElement {
       }
       if (event.repeat) return;
       if (state.status === "won") return;
+      if (blockHoleFillInputRef.current) return;
 
       dispatch(movePlayer(direction));
     }
@@ -291,6 +344,29 @@ export function GameCanvas(): ReactElement {
       {tileElements}
       {machineElements}
       {entityElements}
+      {activeHoleFills.map((fill) => {
+        const ghost: Entity = {
+          id: fill.entityId,
+          kind: fill.entityKind,
+          position: fill.from,
+        };
+        return (
+          <HoleFillOverlay
+            key={fill.key}
+            tileSize={TILE_SIZE}
+            from={fill.from}
+            hole={fill.hole}
+            entityKind={fill.entityKind}
+            entityFill={entityColor(ghost)}
+            entityBorder={entityBorderColor(fill.entityKind)}
+            holeColor={tileColor("hole")}
+            floorColor={tileColor("floor")}
+            onComplete={() => {
+              removeHoleFill(fill.key);
+            }}
+          />
+        );
+      })}
       {playerElement}
     </div>
   );

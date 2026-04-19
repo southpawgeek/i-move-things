@@ -22,12 +22,11 @@ function GameScreen() {
   return (
     <div
       style={{
-        padding: "2rem 1rem",
+        padding: "2rem 1rem 4rem",
         maxWidth: "900px",
         margin: "0 auto",
         fontFamily: "'Press Start 2P', 'Courier New', monospace",
         color: "#e2e8f0",
-        minHeight: "100vh",
         background: "linear-gradient(180deg, #0a0a1a 0%, #111128 100%)",
       }}
     >

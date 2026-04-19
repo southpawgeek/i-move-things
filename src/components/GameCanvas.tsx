@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactElement,
+} from "react";
 import { restartLevel } from "../store/actions";
 import { movePlayer } from "../store/actions";
 import { useGame } from "../store/GameContext";
@@ -7,6 +15,56 @@ import { HoleFillOverlay } from "./HoleFillOverlay";
 import { detectHoleFills } from "./holeFillDiff";
 
 const TILE_SIZE = 48;
+
+export const WALL_PAC_BORDER = "3px solid #0ff";
+
+/** True when this wall side faces floor, hole, or goal (not another wall, not off-map). */
+export function exposesWallPacEdge(neighbor: TileType | undefined): boolean {
+  if (neighbor === "wall" || neighbor === undefined) return false;
+  return neighbor === "floor" || neighbor === "hole" || neighbor === "goal";
+}
+
+export type WallPacBorderSides = Pick<
+  CSSProperties,
+  "borderTop" | "borderRight" | "borderBottom" | "borderLeft"
+>;
+
+export type WallPacCornerRadii = Pick<
+  CSSProperties,
+  | "borderTopLeftRadius"
+  | "borderTopRightRadius"
+  | "borderBottomRightRadius"
+  | "borderBottomLeftRadius"
+>;
+
+export type WallPacTileOutlineStyle = WallPacBorderSides & WallPacCornerRadii;
+
+/** Walls stay square; per-tile % rounding reads as blobs when runs share opposite edges (e.g. top+bottom). */
+const WALL_CORNER_RADIUS = 0;
+
+export function wallPacTileOutlineStyle(
+  grid: (TileType | undefined)[][],
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): WallPacTileOutlineStyle {
+  const top = exposesWallPacEdge(y > 0 ? grid[y - 1]?.[x] : undefined);
+  const right = exposesWallPacEdge(x < width - 1 ? grid[y]?.[x + 1] : undefined);
+  const bottom = exposesWallPacEdge(y < height - 1 ? grid[y + 1]?.[x] : undefined);
+  const left = exposesWallPacEdge(x > 0 ? grid[y]?.[x - 1] : undefined);
+  const side = (exposed: boolean) => (exposed ? WALL_PAC_BORDER : "none");
+  return {
+    borderTop: side(top),
+    borderRight: side(right),
+    borderBottom: side(bottom),
+    borderLeft: side(left),
+    borderTopLeftRadius: WALL_CORNER_RADIUS,
+    borderTopRightRadius: WALL_CORNER_RADIUS,
+    borderBottomRightRadius: WALL_CORNER_RADIUS,
+    borderBottomLeftRadius: WALL_CORNER_RADIUS,
+  };
+}
 
 function tileColor(tile: TileType): string {
   switch (tile) {
@@ -20,7 +78,7 @@ function tileColor(tile: TileType): string {
       return "#000000";
     case "floor":
     default:
-      return "#1e1b4b";
+      return "#000000";
   }
 }
 
@@ -205,21 +263,36 @@ export function GameCanvas({
     const elements: ReactElement[] = [];
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const tile = tileGrid[y]?.[x];
+          const tile = tileGrid[y]?.[x];
         if (!tile) continue;
+        const goalBorder = tile === "goal" ? "3px solid #f0f" : undefined;
+        const holeBorder = tile === "hole" ? "3px solid #ef4444" : undefined;
+
+        const tileStyle: React.CSSProperties = {
+          position: "absolute",
+          left: x * TILE_SIZE,
+          top: y * TILE_SIZE,
+          width: TILE_SIZE,
+          height: TILE_SIZE,
+          backgroundColor: tile === "wall" ? "#000" : tile === "goal" ? "#000" : tileColor(tile),
+          boxSizing: "border-box",
+        };
+
+        if (tile === "wall") {
+          Object.assign(tileStyle, wallPacTileOutlineStyle(tileGrid, x, y, width, height));
+        } else {
+          tileStyle.borderRadius = tile === "goal" || tile === "hole" ? "50%" : 0;
+          if (goalBorder) {
+            tileStyle.border = goalBorder;
+          } else if (holeBorder) {
+            tileStyle.border = holeBorder;
+          }
+        }
+
         elements.push(
           <div
             key={`tile-${x}-${y}`}
-            style={{
-              position: "absolute",
-              left: x * TILE_SIZE,
-              top: y * TILE_SIZE,
-              width: TILE_SIZE,
-              height: TILE_SIZE,
-              backgroundColor: tileColor(tile),
-              border: "1px solid #1f2937",
-              boxSizing: "border-box",
-            }}
+            style={tileStyle}
           />
         );
       }
@@ -345,10 +418,10 @@ export function GameCanvas({
         width: width * TILE_SIZE,
         height: height * TILE_SIZE,
         margin: "0 auto",
-        border: "1px solid #7c3aed",
+        border: "2px solid #000",
         borderRadius: "8px",
         overflow: "hidden",
-        background: "#1e1b4b",
+        background: "#000",
         boxShadow: "0 0 20px rgba(124, 58, 237, 0.3), inset 0 0 20px rgba(124, 58, 237, 0.1)",
       }}
     >

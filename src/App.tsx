@@ -136,48 +136,6 @@ function GameScreen({
         </button>
         <button
           type="button"
-          onClick={onNextLevel}
-          disabled={state.status !== "won" || !hasNextLevel}
-          style={{
-            background:
-              state.status === "won" && hasNextLevel
-                ? "linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)"
-                : "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
-            color:
-              state.status === "won" && hasNextLevel ? "#ffffff" : "#6b7280",
-            border:
-              state.status === "won" && hasNextLevel
-                ? "1px solid #a855f7"
-                : "1px solid #374151",
-            borderRadius: "4px",
-            padding: "0.4rem 0.8rem",
-            fontFamily: "'Press Start 2P', 'Courier New', monospace",
-            fontSize: "0.65rem",
-            cursor:
-              state.status === "won" && hasNextLevel ? "pointer" : "not-allowed",
-            transition: "all 0.15s ease",
-            opacity: state.status !== "won" || !hasNextLevel ? 0.5 : 1,
-            boxShadow:
-              state.status === "won" && hasNextLevel
-                ? "0 0 12px rgba(168, 85, 240, 0.5)"
-                : "none",
-          }}
-          onMouseEnter={(e) => {
-            if (state.status === "won" && hasNextLevel) {
-              e.currentTarget.style.boxShadow = "0 0 16px rgba(168, 85, 240, 0.7)";
-              e.currentTarget.style.filter = "brightness(1.1)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow =
-              "0 0 12px rgba(168, 85, 240, 0.5)";
-            e.currentTarget.style.filter = "brightness(1)";
-          }}
-        >
-          {hasNextLevel ? "NEXT LEVEL" : "NO MORE LEVELS"}
-        </button>
-        <button
-          type="button"
           onClick={() => setShowEditor(true)}
           style={{
             background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)",

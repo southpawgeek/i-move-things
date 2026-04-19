@@ -32,6 +32,7 @@ export function HoleFillOverlay({
   const slideCommitted = useRef(false);
   const maskFilled = useRef(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const doneRef = useRef(false);
 
   const isPuddle = entityKind === "puddle";
   const innerTop = isPuddle ? 8 : 4;
@@ -73,6 +74,20 @@ export function HoleFillOverlay({
     onComplete();
   }
 
+  // Fallback timeout in case transition events don't fire
+  const totalMs = SLIDE_MS + SHRINK_MS + HOLE_FILL_MS + 100;
+  useLayoutEffect(() => {
+    if (phase === "done") return;
+    const timer = setTimeout(() => {
+      if (!doneRef.current) {
+        doneRef.current = true;
+        setPhase("done");
+        onComplete();
+      }
+    }, totalMs);
+    return () => clearTimeout(timer);
+  }, [phase, onComplete]);
+
   return (
     <>
       <div
@@ -85,7 +100,6 @@ export function HoleFillOverlay({
           zIndex: 4,
           pointerEvents: "none",
           boxSizing: "border-box",
-          border: "1px solid #1f2937",
           backgroundColor: phase === "fill" || phase === "done" ? floorColor : holeColor,
           transition:
             phase === "fill" || phase === "done"

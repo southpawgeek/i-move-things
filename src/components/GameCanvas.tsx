@@ -19,7 +19,7 @@ function tileColor(tile: TileType): string {
     case "ice":
       return "#93c5fd";
     case "hole":
-      return "#1e293b";
+      return "#000000";
     case "floor":
     default:
       return "#0f172a";

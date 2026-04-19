@@ -1,5 +1,6 @@
 import { useReducer, useRef, useState, useEffect, type ReactElement } from "react";
 import { GameCanvas } from "./GameCanvas";
+import { GameProvider } from "../store/GameContext";
 import { gameReducer } from "../store/gameReducer";
 import { loadLevel, restartLevel } from "../store/actions";
 import type { LevelDefinition } from "../logic/types";
@@ -73,7 +74,17 @@ function PlayLevelScreen({
           CLOSE
         </button>
       </div>
-      <GameCanvas />
+      <GameProvider
+        initialState={{
+          ...loadLevel(levelIndex, level),
+          status: "playing",
+          moveCount: 0,
+          frozenPuddles: [],
+          nextEntityId: 0,
+        } as any}
+      >
+        <GameCanvas />
+      </GameProvider>
     </div>
   );
 }

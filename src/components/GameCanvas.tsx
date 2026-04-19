@@ -7,7 +7,6 @@ import {
   type CSSProperties,
   type ReactElement,
 } from "react";
-import { restartLevel } from "../store/actions";
 import { movePlayer } from "../store/actions";
 import { useGame } from "../store/GameContext";
 import type { Direction, Entity, Machine, TileType } from "../logic/types";
@@ -274,7 +273,7 @@ export function GameCanvas({
           top: y * TILE_SIZE,
           width: TILE_SIZE,
           height: TILE_SIZE,
-          backgroundColor: tile === "wall" ? "#000" : tile === "goal" ? "#000" : tileColor(tile),
+          backgroundColor: tile === "wall" ? "#011" : tile === "goal" ? "#000" : tileColor(tile),
           boxSizing: "border-box",
         };
 
@@ -350,16 +349,28 @@ export function GameCanvas({
     const elements: ReactElement[] = [];
     for (const entity of state.entities) {
       const isPuddle = entity.kind === "puddle";
+      const isRound = entity.kind === "box" || entity.kind === "debris";
+      const tx = entity.position.x * TILE_SIZE;
+      const ty = entity.position.y * TILE_SIZE;
       elements.push(
         <div
           key={`entity-${entity.id}`}
           style={{
             position: "absolute",
-            left: entity.position.x * TILE_SIZE,
-            top: entity.position.y * TILE_SIZE,
+            left: 0,
+            top: 0,
             width: TILE_SIZE,
             height: TILE_SIZE,
-            transition: "left 0.1s ease, top 0.1s ease",
+            // translate3d keeps border-radius during animation; left/top animation often squares the layer.
+            transform: `translate3d(${tx}px, ${ty}px, 0)`,
+            transition: "transform 0.1s ease",
+            ...(isRound
+              ? {
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  backfaceVisibility: "hidden",
+                }
+              : {}),
           }}
         >
           <div
@@ -371,6 +382,7 @@ export function GameCanvas({
               height: isPuddle ? TILE_SIZE - 16 : TILE_SIZE - 8,
               backgroundColor: entityColor(entity),
               border: `1px solid ${isPuddle ? "#0c4a6e" : "#111827"}`,
+              borderRadius: isRound ? "50%" : "0",
               boxSizing: "border-box",
             }}
           />

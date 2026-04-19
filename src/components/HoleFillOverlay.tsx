@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactElement } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+} from "react";
 import type { Entity, Position } from "../logic/types";
 
 const SLIDE_MS = 150;
@@ -47,22 +55,34 @@ export function HoleFillOverlay({
   }, []);
 
   const isPuddle = entityKind === "puddle";
+  const isRound = entityKind === "box" || entityKind === "debris";
   const innerTop = isPuddle ? 8 : 4;
   const innerLeft = isPuddle ? 8 : 4;
   const innerW = isPuddle ? tileSize - 16 : tileSize - 8;
   const innerH = isPuddle ? tileSize - 16 : tileSize - 8;
 
+  const fromPx = useMemo(
+    () => ({ x: from.x * tileSize, y: from.y * tileSize }),
+    [from.x, from.y, tileSize],
+  );
+  const holePx = useMemo(
+    () => ({ x: hole.x * tileSize, y: hole.y * tileSize }),
+    [hole.x, hole.y, tileSize],
+  );
+
+  const [slidePos, setSlidePos] = useState(fromPx);
+
+  // Controlled translate3d so React never snaps back to `from` after shrink/fill; GPU path keeps circles round.
   useLayoutEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
-    el.style.left = `${from.x * tileSize}px`;
-    el.style.top = `${from.y * tileSize}px`;
-    void el.offsetHeight;
-    requestAnimationFrame(() => {
-      el.style.left = `${hole.x * tileSize}px`;
-      el.style.top = `${hole.y * tileSize}px`;
-    });
-  }, [from.x, from.y, hole.x, hole.y, tileSize]);
+    if (phase === "slide") {
+      setSlidePos(fromPx);
+      const id = requestAnimationFrame(() => {
+        setSlidePos(holePx);
+      });
+      return () => cancelAnimationFrame(id);
+    }
+    setSlidePos(holePx);
+  }, [fromPx, holePx, phase]);
 
   // No movement: skip slide (no transitionend when left/top don't change).
   useLayoutEffect(() => {
@@ -111,7 +131,7 @@ export function HoleFillOverlay({
 
   function onWrapperTransitionEnd(event: React.TransitionEvent<HTMLDivElement>): void {
     if (event.target !== wrapperRef.current) return;
-    if (event.propertyName !== "left" && event.propertyName !== "top") return;
+    if (event.propertyName !== "transform") return;
     if (slideCommitted.current) return;
     slideCommitted.current = true;
     setPhase("shrink");
@@ -153,14 +173,22 @@ export function HoleFillOverlay({
           ref={wrapperRef}
           style={{
             position: "absolute",
-            left: from.x * tileSize,
-            top: from.y * tileSize,
+            left: 0,
+            top: 0,
             width: tileSize,
             height: tileSize,
+            transform: `translate3d(${slidePos.x}px, ${slidePos.y}px, 0)`,
             zIndex: 5,
             pointerEvents: "none",
             transition:
-              phase === "slide" ? `left ${SLIDE_MS}ms ease, top ${SLIDE_MS}ms ease` : undefined,
+              phase === "slide" ? `transform ${SLIDE_MS}ms ease` : undefined,
+            ...(isRound
+              ? {
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  backfaceVisibility: "hidden",
+                }
+              : {}),
           }}
           onTransitionEnd={phase === "slide" ? onWrapperTransitionEnd : undefined}
         >
@@ -174,6 +202,7 @@ export function HoleFillOverlay({
               backgroundColor: entityFill,
               border: `1px solid ${entityBorder}`,
               boxSizing: "border-box",
+              borderRadius: isRound ? "50%" : "0",
               transform: phase === "slide" ? "scale(1)" : "scale(0)",
               transformOrigin: "center center",
               transition: phase === "shrink" ? `transform ${SHRINK_MS}ms ease` : undefined,

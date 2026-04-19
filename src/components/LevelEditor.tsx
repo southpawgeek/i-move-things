@@ -599,11 +599,11 @@ export function LevelEditor({
           setIsDragging(false);
           setHoverCell(null);
         }}
-        onMouseMove={handleGridMouseMove}
-        onMouseUp={() => setIsDragging(false)}
-        onMouseEnter={(e) => {
-          if (isDragging) handleGridDrag(e);
+        onMouseMove={(e) => {
+          handleGridMouseMove(e);
+          if (isDragging && e.buttons === 1) handleGridDrag(e);
         }}
+        onMouseUp={() => setIsDragging(false)}
         style={{
           display: "inline-grid",
           gridTemplateColumns: `repeat(${width}, ${TILE_SIZE}px)`,

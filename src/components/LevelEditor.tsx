@@ -91,6 +91,7 @@ export function LevelEditor({
   >("tile");
   const [selectedTile, setSelectedTile] = useState<TileType>("wall");
   const [selectedEntity, setSelectedEntity] = useState<EntityType>("box");
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState<MachineType>("fan");
   const [machineFacing, setMachineFacing] = useState<MachineFacing>("right");
   const [hoverCell, setHoverCell] = useState<{ x: number; y: number } | null>(null);
@@ -116,42 +117,54 @@ export function LevelEditor({
       } else if (selectedMode === "player") {
         setPlayerStart({ x, y });
       } else if (selectedMode === "entity") {
-        setEntities((prev) => {
-          const existing = prev.findIndex(
-            (en) => en.position.x === x && en.position.y === y,
-          );
-          const next = [...prev];
-          if (existing >= 0) {
-            next[existing] = { kind: selectedEntity, position: { x, y } };
-          } else {
-            next.push({ kind: selectedEntity, position: { x, y } });
-          }
-          return next;
-        });
+        if (isDeleteMode) {
+          setEntities((prev) => prev.filter(
+            (en) => !(en.position.x === x && en.position.y === y),
+          ));
+        } else {
+          setEntities((prev) => {
+            const existing = prev.findIndex(
+              (en) => en.position.x === x && en.position.y === y,
+            );
+            const next = [...prev];
+            if (existing >= 0) {
+              next[existing] = { kind: selectedEntity, position: { x, y } };
+            } else {
+              next.push({ kind: selectedEntity, position: { x, y } });
+            }
+            return next;
+          });
+        }
       } else if (selectedMode === "machine") {
-        setMachines((prev) => {
-          const existing = prev.findIndex(
-            (m) => m.position.x === x && m.position.y === y,
-          );
-          const next = [...prev];
-          if (existing >= 0) {
-            next[existing] = {
-              type: selectedMachine,
-              position: { x, y },
-              facing: machineFacing,
-            };
-          } else {
-            next.push({
-              type: selectedMachine,
-              position: { x, y },
-              facing: machineFacing,
-            });
-          }
-          return next;
-        });
+        if (isDeleteMode) {
+          setMachines((prev) => prev.filter(
+            (m) => !(m.position.x === x && m.position.y === y),
+          ));
+        } else {
+          setMachines((prev) => {
+            const existing = prev.findIndex(
+              (m) => m.position.x === x && m.position.y === y,
+            );
+            const next = [...prev];
+            if (existing >= 0) {
+              next[existing] = {
+                type: selectedMachine,
+                position: { x, y },
+                facing: machineFacing,
+              };
+            } else {
+              next.push({
+                type: selectedMachine,
+                position: { x, y },
+                facing: machineFacing,
+              });
+            }
+            return next;
+          });
+        }
       }
     },
-    [selectedMode, selectedTile, selectedEntity, selectedMachine, machineFacing, width, height],
+    [selectedMode, selectedTile, selectedEntity, isDeleteMode, selectedMachine, machineFacing, width, height],
   );
 
   useEffect(() => {
@@ -531,6 +544,27 @@ export function LevelEditor({
 
         <div style={{ flex: 1 }} />
 
+        {selectedMode === "entity" || selectedMode === "machine" ? (
+          <button
+            type="button"
+            onClick={() => setIsDeleteMode((prev) => !prev)}
+            style={{
+              background: isDeleteMode
+                ? "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)"
+                : "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
+              color: isDeleteMode ? "#fff" : "#e2e8f0",
+              border: "1px solid #dc2626",
+              borderRadius: "4px",
+              padding: "0.3rem 0.5rem",
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              cursor: "pointer",
+            }}
+          >
+            Delete
+          </button>
+        ) : null}
+
         <button
           type="button"
           onClick={handleClear}
@@ -569,6 +603,11 @@ export function LevelEditor({
           } else if (selectedMode === "player") {
             setPlayerStart({ x, y });
           } else if (selectedMode === "entity") {
+          if (isDeleteMode) {
+            setEntities((prev) => prev.filter(
+              (en) => !(en.position.x === x && en.position.y === y),
+            ));
+          } else {
             setEntities((prev) => {
               const existing = prev.findIndex(
                 (en) => en.position.x === x && en.position.y === y,
@@ -581,7 +620,13 @@ export function LevelEditor({
               }
               return next;
             });
+          }
           } else if (selectedMode === "machine") {
+          if (isDeleteMode) {
+            setMachines((prev) => prev.filter(
+              (m) => !(m.position.x === x && m.position.y === y),
+            ));
+          } else {
             setMachines((prev) => {
               const existing = prev.findIndex(
                 (m) => m.position.x === x && m.position.y === y,
@@ -602,6 +647,7 @@ export function LevelEditor({
               }
               return next;
             });
+          }
           }
         }}
         onMouseOut={() => setHoverCell(null)}

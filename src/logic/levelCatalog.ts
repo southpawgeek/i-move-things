@@ -1,5 +1,6 @@
 import begin from "../levels/begin.json"
 import holes from "../levels/holes.json"
+import fanHoles from "../levels/fan-holes.json"
 import level01 from "../levels/level-01.json"
 import level02 from "../levels/level-02.json"
 import type { LevelDefinition, TileType } from "./types"
@@ -96,7 +97,8 @@ export { parseLevel }
  */
 export const LEVEL_CONFIG: { name: string; level: LevelDefinition }[] = [
   { name: "You Move Things", level: parseLevel(begin) },
-  { name: "Boxes and Holes", level: parseLevel(holes) },
+  { name: "Box Goes Away", level: parseLevel(holes) },
+  { name: "Blow It Away", level: parseLevel(fanHoles) },
   { name: "Machines I", level: parseLevel(level01) },
   { name: "Machines II", level: parseLevel(level02) }
 ]

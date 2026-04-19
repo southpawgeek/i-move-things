@@ -94,6 +94,7 @@ export function LevelEditor({
   const [machineFacing, setMachineFacing] = useState<MachineFacing>("right");
   const [hoverCell, setHoverCell] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [exportedJson, setExportedJson] = useState("");
 
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -198,8 +199,9 @@ export function LevelEditor({
       null,
       2,
     );
-    onExport(json);
-  }, [width, height, tiles, playerStart, entities, machines, onExport]);
+    setExportedJson(json);
+    navigator.clipboard.writeText(json).catch(() => {});
+  }, [width, height, tiles, playerStart, entities, machines]);
 
   const handleImport = useCallback(() => {
     const json = prompt("Paste level JSON:");
@@ -763,12 +765,46 @@ export function LevelEditor({
 
       {/* Export textarea */}
       <ExportOutput />
+    {/* Export output */}
+      {exportedJson && (
+        <div
+          style={{
+            marginTop: "1rem",
+            padding: "0.75rem",
+            background: "rgba(168, 85, 240, 0.08)",
+            border: "1px solid rgba(168, 85, 240, 0.3)",
+            borderRadius: "8px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "0.65rem",
+              marginBottom: "0.5rem",
+              color: "#a78bfa",
+            }}
+          >
+            EXPORT JSON (copied to clipboard)
+          </div>
+          <pre
+            style={{
+              margin: 0,
+              fontSize: "0.6rem",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-all",
+              fontFamily: "'Courier New', monospace",
+              color: "#e2e8f0",
+              maxHeight: "200px",
+              overflow: "auto",
+            }}
+          >
+            {exportedJson}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
 
 function ExportOutput(): ReactElement {
-  const [copied, setCopied] = useState(false);
-
   return null;
 }

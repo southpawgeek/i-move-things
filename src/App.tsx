@@ -7,7 +7,11 @@ import { LEVELS } from "./logic/levelCatalog";
 import { loadLevel, restartLevel } from "./store/actions";
 import { useState, type ReactElement } from "react";
 
-function GameScreen() {
+function GameScreen({
+  setShowEditor,
+}: {
+  setShowEditor: (v: boolean) => void;
+}) {
   const { state, dispatch } = useGame();
   const hasNextLevel = state.levelIndex < LEVELS.length - 1;
 
@@ -226,7 +230,7 @@ export default function App() {
 
   return (
     <GameProvider initialState={createInitialState(LEVELS[0], 0)}>
-      <GameScreen />
+      <GameScreen setShowEditor={setShowEditor} />
     </GameProvider>
   );
 }

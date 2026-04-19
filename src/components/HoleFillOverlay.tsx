@@ -1,9 +1,13 @@
-import { useLayoutEffect, useRef, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactElement } from "react";
 import type { Entity, Position } from "../logic/types";
 
 const SLIDE_MS = 150;
 const SHRINK_MS = 140;
 const HOLE_FILL_MS = 180;
+
+function colorsMatch(a: string, b: string): boolean {
+  return a.replace(/\s/g, "").toLowerCase() === b.replace(/\s/g, "").toLowerCase();
+}
 
 type HoleFillOverlayProps = {
   tileSize: number;
@@ -30,9 +34,17 @@ export function HoleFillOverlay({
 }: HoleFillOverlayProps): ReactElement {
   const [phase, setPhase] = useState<"slide" | "shrink" | "fill" | "done">("slide");
   const slideCommitted = useRef(false);
-  const maskFilled = useRef(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const doneRef = useRef(false);
+  const finishedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  const finish = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    setPhase("done");
+    onCompleteRef.current();
+  }, []);
 
   const isPuddle = entityKind === "puddle";
   const innerTop = isPuddle ? 8 : 4;
@@ -52,6 +64,51 @@ export function HoleFillOverlay({
     });
   }, [from.x, from.y, hole.x, hole.y, tileSize]);
 
+  // No movement: skip slide (no transitionend when left/top don't change).
+  useLayoutEffect(() => {
+    if (phase !== "slide") return;
+    if (from.x === hole.x && from.y === hole.y) {
+      slideCommitted.current = true;
+      setPhase("shrink");
+    }
+  }, [phase, from.x, from.y, hole.x, hole.y]);
+
+  // Hole and floor are often the same hex — no background-color transition, so transitionend never fires.
+  useLayoutEffect(() => {
+    if (phase !== "fill") return;
+    if (colorsMatch(holeColor, floorColor)) {
+      finish();
+    }
+  }, [phase, holeColor, floorColor, finish]);
+
+  // Per-phase backups (do not depend on `onComplete` identity — avoids timer reset loops).
+  useEffect(() => {
+    if (phase !== "slide") return;
+    const id = window.setTimeout(() => {
+      if (!slideCommitted.current) {
+        slideCommitted.current = true;
+        setPhase("shrink");
+      }
+    }, SLIDE_MS + 50);
+    return () => window.clearTimeout(id);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "shrink") return;
+    const id = window.setTimeout(() => {
+      setPhase((p) => (p === "shrink" ? "fill" : p));
+    }, SHRINK_MS + 50);
+    return () => window.clearTimeout(id);
+  }, [phase]);
+
+  // When colors differ, still guard against missing transitionend (reduced motion, browser quirks).
+  useEffect(() => {
+    if (phase !== "fill") return;
+    if (colorsMatch(holeColor, floorColor)) return;
+    const id = window.setTimeout(() => finish(), HOLE_FILL_MS + 80);
+    return () => window.clearTimeout(id);
+  }, [phase, holeColor, floorColor, finish]);
+
   function onWrapperTransitionEnd(event: React.TransitionEvent<HTMLDivElement>): void {
     if (event.target !== wrapperRef.current) return;
     if (event.propertyName !== "left" && event.propertyName !== "top") return;
@@ -68,25 +125,8 @@ export function HoleFillOverlay({
   function onMaskTransitionEnd(event: React.TransitionEvent<HTMLDivElement>): void {
     if (event.target !== event.currentTarget) return;
     if (event.propertyName !== "background-color") return;
-    if (maskFilled.current) return;
-    maskFilled.current = true;
-    setPhase("done");
-    onComplete();
+    finish();
   }
-
-  // Fallback timeout in case transition events don't fire
-  const totalMs = SLIDE_MS + SHRINK_MS + HOLE_FILL_MS + 100;
-  useLayoutEffect(() => {
-    if (phase === "done") return;
-    const timer = setTimeout(() => {
-      if (!doneRef.current) {
-        doneRef.current = true;
-        setPhase("done");
-        onComplete();
-      }
-    }, totalMs);
-    return () => clearTimeout(timer);
-  }, [phase, onComplete]);
 
   return (
     <>
@@ -106,7 +146,7 @@ export function HoleFillOverlay({
               ? `background-color ${HOLE_FILL_MS}ms ease`
               : undefined,
         }}
-        onTransitionEnd={phase === "fill" ? onMaskTransitionEnd : undefined}
+        onTransitionEnd={phase === "fill" && !colorsMatch(holeColor, floorColor) ? onMaskTransitionEnd : undefined}
       />
       {phase !== "done" ? (
         <div

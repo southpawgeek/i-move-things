@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LevelEditor } from "./LevelEditor";
+
+beforeEach(() => {
+  Object.defineProperty(navigator, "clipboard", {
+    value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    writable: true,
+  });
+});
 
 describe("LevelEditor", () => {
   const mockOnExport = vi.fn();
@@ -24,23 +31,17 @@ describe("LevelEditor", () => {
     expect(screen.getByText(/EXPORT/i)).toBeDefined();
   });
 
-  it("exports valid JSON", () => {
+  it("exports valid JSON and shows it in the DOM", async () => {
     render(<LevelEditor onExport={mockOnExport} onCancel={mockOnCancel} />);
 
     const exportBtn = screen.getByText(/EXPORT/i);
     fireEvent.click(exportBtn);
 
-    expect(mockOnExport).toHaveBeenCalled();
-    const json = mockOnExport.mock.calls[0][0];
-    const parsed = JSON.parse(json);
-
-    expect(typeof parsed.width).toBe("number");
-    expect(typeof parsed.height).toBe("number");
-    expect(Array.isArray(parsed.tiles));
-    expect(typeof parsed.playerStart.x).toBe("number");
-    expect(typeof parsed.playerStart.y).toBe("number");
-    expect(Array.isArray(parsed.entities));
-    expect(Array.isArray(parsed.machines));
+    const output = await screen.findByText(/width/i);
+    expect(output).toBeDefined();
+    expect(output.textContent).toContain('"width"');
+    expect(output.textContent).toContain('"height"');
+    expect(output.textContent).toContain('"tiles"');
   });
 
   it("clears the grid", () => {

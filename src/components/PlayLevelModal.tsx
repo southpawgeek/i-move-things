@@ -17,9 +17,7 @@ function PlayLevelScreen({
   levelIndex,
   onClose,
 }: PlayLevelModalProps): ReactElement {
-  const [state, dispatch] = useReducer(gameReducer, {
-    ...loadLevel(levelIndex, level),
-  } as any);
+  const [state, dispatch] = useReducer(gameReducer, createInitialState(level, levelIndex));
 
   return (
     <div

@@ -1,0 +1,63 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { LevelEditor } from "./LevelEditor";
+
+describe("LevelEditor", () => {
+  const mockOnExport = vi.fn();
+  const mockOnCancel = vi.fn();
+
+  beforeEach(() => {
+    mockOnExport.mockReset();
+    mockOnCancel.mockReset();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders the editor with grid and controls", () => {
+    render(<LevelEditor onExport={mockOnExport} onCancel={mockOnCancel} />);
+
+    expect(screen.getByText("LEVEL EDITOR")).toBeDefined();
+    expect(screen.getByText(/Wall/i)).toBeDefined();
+    expect(screen.getByText(/EXPORT/i)).toBeDefined();
+  });
+
+  it("exports valid JSON", () => {
+    render(<LevelEditor onExport={mockOnExport} onCancel={mockOnCancel} />);
+
+    const exportBtn = screen.getByText(/EXPORT/i);
+    fireEvent.click(exportBtn);
+
+    expect(mockOnExport).toHaveBeenCalled();
+    const json = mockOnExport.mock.calls[0][0];
+    const parsed = JSON.parse(json);
+
+    expect(typeof parsed.width).toBe("number");
+    expect(typeof parsed.height).toBe("number");
+    expect(Array.isArray(parsed.tiles));
+    expect(typeof parsed.playerStart.x).toBe("number");
+    expect(typeof parsed.playerStart.y).toBe("number");
+    expect(Array.isArray(parsed.entities));
+    expect(Array.isArray(parsed.machines));
+  });
+
+  it("clears the grid", () => {
+    render(<LevelEditor onExport={mockOnExport} onCancel={mockOnCancel} />);
+
+    const clearBtn = screen.getByText("Clear");
+    fireEvent.click(clearBtn);
+
+    expect(mockOnCancel).not.toHaveBeenCalled();
+  });
+
+  it("calls onCancel when back button is clicked", () => {
+    render(<LevelEditor onExport={mockOnExport} onCancel={mockOnCancel} />);
+
+    const cancelBtn = screen.getByText(/Back to Game/i);
+    fireEvent.click(cancelBtn);
+
+    expect(mockOnCancel).toHaveBeenCalled();
+  });
+});
